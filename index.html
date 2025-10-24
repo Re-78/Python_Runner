@@ -3,15 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pythonコード実行サイト</title>
+  <title>Python Runner</title>
   <style>
     body {
       font-family: "Segoe UI", sans-serif;
       margin: 40px;
       background-color: #f6f6f6;
-    }
-    h1 {
-      color: #333;
     }
     textarea {
       width: 100%;
@@ -21,20 +18,19 @@
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 5px;
-      background: white;
     }
     button {
       margin-top: 10px;
       padding: 10px 20px;
-      font-size: 14px;
-      border: none;
       background-color: #0078D7;
       color: white;
+      border: none;
       border-radius: 5px;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #005A9E;
+    button:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
     }
     pre {
       background: #222;
@@ -51,7 +47,7 @@
 
   <textarea id="code" placeholder="print('Hello, Python!')"></textarea>
   <br>
-  <button id="run">Run</button>
+  <button id="run" disabled>Loading Pyodide...</button>
 
   <h2>Console:</h2>
   <pre id="output"></pre>
@@ -59,24 +55,31 @@
   <script type="module">
     import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.mjs";
 
+    const output = document.getElementById("output");
+    const runButton = document.getElementById("run");
     let pyodide;
+
     async function main() {
+      output.textContent = "🔄 Loading Pyodide...";
       pyodide = await loadPyodide();
-      document.getElementById("output").textContent = "✅ Pyodide（Python環境）がロードされました。";
+      output.textContent = "✅ Success";
+      runButton.textContent = "Run";
+      runButton.disabled = false;
     }
 
     main();
 
-    document.getElementById("run").addEventListener("click", async () => {
+    runButton.addEventListener("click", async () => {
       const code = document.getElementById("code").value;
-      const output = document.getElementById("output");
       output.textContent = "実行中...\n";
+      runButton.disabled = true;
       try {
-        let result = await pyodide.runPythonAsync(code);
+        const result = await pyodide.runPythonAsync(code);
         output.textContent += result !== undefined ? result : "";
       } catch (err) {
         output.textContent += "⚠️ エラー:\n" + err;
       }
+      runButton.disabled = false;
     });
   </script>
 </body>
